@@ -20,3 +20,11 @@ struct CategoryData: Codable {
   let imageCount: Int?
   let description: String?
 }
+
+struct ViewCategoryModel {
+  let data: [CategoryData]
+}
+
+struct Result {
+  let result: [ViewCategoryModel]
+}

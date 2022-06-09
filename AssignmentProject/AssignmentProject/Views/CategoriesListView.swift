@@ -11,27 +11,44 @@ import UIKit
 struct CategoriesListView: View {
   var categories: [Category] = []
   var model = CategoriesViewModel()
+  var viewCategoryModel: [Result] = []
   
   init() {
     let data = model.readLocalFile()
     categories = data?.data ?? []
+    manageModel()
+  }
+  
+  mutating func manageModel() {
+    var categoriesArray: [CategoryData] = []
+    
+    for value in categories {
+      var viewdata: [ViewCategoryModel] = []
+      for (index, category) in value.category.enumerated() {
+        if ((index + 1) % 3 == 0 || value.category.count == 1) {
+          viewdata.append(ViewCategoryModel(data: [category]))
+        } else {
+          categoriesArray.append(category)
+          if categoriesArray.count  == 2 || (value.category.count == (index + 1) ){
+            viewdata.append(ViewCategoryModel(data: categoriesArray))
+            categoriesArray = []
+          }
+        }
+      }
+      viewCategoryModel.append(Result(result: viewdata))
+    }
   }
   
   var body: some View {
     List {
-      ForEach(0..<categories.count) { index in
-        Section(header: Text("\(kCategory) \(index + 1)")
+      ForEach(0..<viewCategoryModel.count) { outerIndex in
+        Section(header: Text("\(kCategory) \(outerIndex + 1)")
                   .font(.system(size: 24).weight(.bold))
                   .foregroundColor(.white)) {
-          ForEach(0..<categories[index].category.count) { i in
-            let category = categories[index].category
-            let categoryData = category[i]
+          
+          ForEach(0..<viewCategoryModel[outerIndex].result.count) { row in
             
-            if (categoryData.type == ContentType.text.rawValue) {
-              Text(category[i].description ?? "")
-                .padding(.top, 4)
-                .padding(.bottom, 4)
-            } else if (categoryData.type == ContentType.image.rawValue) {
+            if viewCategoryModel[outerIndex].result[row].data.count  == 2 {
               HStack {
                 Image("TreeImage")
                   .frame(width: UIScreen.main.bounds.width * 0.4, height: UIScreen.main.bounds.width * 0.4)
@@ -43,8 +60,27 @@ struct CategoriesListView: View {
               }
               .padding(.top, 4)
               .padding(.bottom, 4)
-            } else {
-              Text(category[i].description ?? "")
+            } else  {
+              if row % 2 == 0 && viewCategoryModel[outerIndex].result.count != 1 {
+                HStack {
+                  Image("TreeImage")
+                    .frame(width: UIScreen.main.bounds.width * 0.4, height: UIScreen.main.bounds.width * 0.4)
+                    .cornerRadius(12)
+                  Spacer()
+                }
+                .padding(.top, 4)
+                .padding(.bottom, 4)
+              } else  {
+                HStack {
+//                  Spacer()
+                  Image("TreeImage")
+                    .frame(width: UIScreen.main.bounds.width * 0.88, height: UIScreen.main.bounds.width * 0.4)
+                    .cornerRadius(12)
+                  Spacer()
+                }
+                .padding(.top, 4)
+                .padding(.bottom, 4)
+              }
             }
           }
         }
